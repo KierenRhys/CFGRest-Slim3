@@ -1,3 +1,5 @@
 /vendor/
+/tests/
+/templates/
 /logs/*
 !/logs/README.md
