@@ -27,10 +27,10 @@ $app->get('/magasins/[{id}]', function (Request $request, Response $response, ar
 
 // Magasin par id
 $app->get('/magasin/[{id}]', function (Request $request, Response $response, array $args) {
-    $sth = $this->db->prepare("SELECT * FROM magasin WHERE id=:id ORDER BY dateajout DESC");
+    $sth = $this->db->prepare("SELECT * FROM magasin WHERE id=:id");
     $sth->bindParam("id", $args['id']);
     $sth->execute();
-    $magasin = $sth->fetchAll();
+    $magasin = $sth->fetch();
     return $this->response->withJson($magasin);
 });
 
@@ -48,7 +48,7 @@ $app->get('/logiciel/[{id}]', function (Request $request, Response $response, ar
     $sth = $this->db->prepare("SELECT * FROM logiciel WHERE id=:id");
     $sth->bindParam("id", $args['id']);
     $sth->execute();
-    $logiciel = $sth->fetchAll();
+    $logiciel = $sth->fetch();
     return $this->response->withJson($logiciel);
 });
 
@@ -66,7 +66,7 @@ $app->get('/serveur/[{id}]', function (Request $request, Response $response, arr
     $sth = $this->db->prepare("SELECT * FROM serveur WHERE id=:id");
     $sth->bindParam("id", $args['id']);
     $sth->execute();
-    $serveur = $sth->fetchAll();
+    $serveur = $sth->fetch();
     return $this->response->withJson($serveur);
 });
 
@@ -84,8 +84,50 @@ $app->get('/tpv/[{id}]', function (Request $request, Response $response, array $
     $sth = $this->db->prepare("SELECT * FROM tpv WHERE id=:id");
     $sth->bindParam("id", $args['id']);
     $sth->execute();
-    $tpv = $sth->fetchAll();
+    $tpv = $sth->fetch();
     return $this->response->withJson($tpv);
+});
+
+// Liste des numéros de série pour les serveurs
+$app->get('/serveursNumeros', function (Request $request, Response $response, array $args) {
+    $sth = $this->db->prepare("SELECT DISTINCT numeroserie FROM serveur");
+    $sth->execute();
+    $nums = $sth->fetchAll();
+    $ret = [];
+    foreach($nums as $num) {
+        $num = json_encode($num);
+        $num = json_decode($num);
+        array_push($ret, $num->numeroserie);
+    }
+    return $this->response->withJson($ret);
+});
+
+// Liste des numéros de série pour les tpvs
+$app->get('/tpvsNumeros', function (Request $request, Response $response, array $args) {
+    $sth = $this->db->prepare("SELECT DISTINCT numeroserie FROM tpv");
+    $sth->execute();
+    $nums = $sth->fetchAll();
+    $ret = [];
+    foreach($nums as $num) {
+        $num = json_encode($num);
+        $num = json_decode($num);
+        array_push($ret, $num->numeroserie);
+    }
+    return $this->response->withJson($ret);
+});
+
+// Liste des licences pour les logiciels
+$app->get('/logicielsLicences', function (Request $request, Response $response, array $args) {
+    $sth = $this->db->prepare("SELECT DISTINCT licence FROM logiciel");
+    $sth->execute();
+    $nums = $sth->fetchAll();
+    $ret = [];
+    foreach($nums as $num) {
+        $num = json_encode($num);
+        $num = json_decode($num);
+        array_push($ret, $num->licence);
+    }
+    return $this->response->withJson($ret);
 });
 
 // Envoie de mail
@@ -157,7 +199,7 @@ $app->get('/mail/[{id}]', function (Request $request, Response $response, array 
                     <td>'.$magasin->dimancheDebut.' - '.$magasin->dimancheFin.'</td>
                 </tr>
             </table>
-            <p>Les équipements : </p>
+            <p>Les logiciels : </p>
             <table>
                 <tr>
                     <th>Désignation</th>
@@ -255,11 +297,34 @@ $app->get('/mail/[{id}]', function (Request $request, Response $response, array 
 // Ajout d'un magasin
 $app->post('/magasin', function ($request, $response) {
     $input = $request->getParsedBody();
-    $sql = "INSERT INTO `magasin`(`dateajout`, `enseigne`, `site`, `adresse`, `ville`, `CP`, `responsable`, `telephone`, `contact`, `fax`, `caisses`, `nombre`, `telemaintenance`, `idutilisateur`, `lundiDebut`, `lundiFin`, `mardiDebut`, `mardiFin`, `mercrediDebut`, `mercrediFin`, `jeudiDebut`, `jeudiFin`, `vendrediDebut`, `vendrediFin`, `samediDebut`, `samediFin`, `dimancheDebut`, `dimancheFin`) 
-            VALUES (:dateajout, :enseigne, :site, :adresse, :ville, :CP, :responsable, :telephone, :contact, :fax, :caisses, :nombre, :telemaintenance, :idutilisateur, :lundiDebut, :lundiFin, :mardiDebut, :mardiFin, :mercrediDebut, :mercrediFin, :jeudiDebut, :jeudiFin, :vendrediDebut, :vendrediFin, :samediDebut, :samediFin, :dimancheDebut, :dimancheFin);";
+    $sql = "INSERT INTO `magasin`(`dateajout`, `enseigne`, `logo`, `site`, `adresse`, `ville`, `CP`, `responsable`, `telephone`, `contact`, `fax`, `caisses`, `nombre`, `telemaintenance`, `idutilisateur`, `lundiDebut`, `lundiFin`, `mardiDebut`, `mardiFin`, `mercrediDebut`, `mercrediFin`, `jeudiDebut`, `jeudiFin`, `vendrediDebut`, `vendrediFin`, `samediDebut`, `samediFin`, `dimancheDebut`, `dimancheFin`) 
+            VALUES (:dateajout, :enseigne, :logo, :site, :adresse, :ville, :CP, :responsable, :telephone, :contact, :fax, :caisses, :nombre, :telemaintenance, :idutilisateur, :lundiDebut, :lundiFin, :mardiDebut, :mardiFin, :mercrediDebut, :mercrediFin, :jeudiDebut, :jeudiFin, :vendrediDebut, :vendrediFin, :samediDebut, :samediFin, :dimancheDebut, :dimancheFin);";
     $sth = $this->db->prepare($sql);
     $sth->bindParam("dateajout", $input['dateajout']);
     $sth->bindParam("enseigne", $input['enseigne']);
+    $enseignes = array(
+        'Galeries Lafayette' => 'https://static.galerieslafayette.com/media/endeca2/header/logo-galeries-lafayette-16092015.png', 
+        'BHV' => 'http://www.bhv.fr/wp-content/themes/bhvV3/images/logo.png?x24648',
+        'PRODIM' => 'http://www.prodim.fr/wp-content/themes/prodim/img/logo_prodim_medium.png',
+        'PRODIM_VLP5.8' => 'http://www.prodim.fr/wp-content/themes/prodim/img/logo_prodim_medium.png',
+        'Monoprix' => 'https://www.monoprix.fr/img/logo_monoprix.png',
+        'GIFI' => 'https://www.gifi.fr/skin/frontend/enterprise/gifi2017/images/header/logo-gifi.png',
+        'Bricorama' => 'https://www.bricorama.fr/skin/frontend/bricorama/bricorama/images/logo_bricorama.png',
+        'Nicolas' => 'http://medias.nicolas.com/media/sys_master/images/hb9/h04/8796200861726.png',
+        'Nicolas CLBS' => 'http://medias.nicolas.com/media/sys_master/images/hb9/h04/8796200861726.png',
+        'Parashop' => 'https://srv3.parashop.com/themes/panda/img/logo_parashop_blanc.svg',
+        'Carrefour Market' => 'http://static4.carrefour.fr/sites/default/files/public/images/default_logos/hallebarde_v3.png',
+        'Jardiland' => 'https://www.jardiland.com/skin/frontend/jardiland/default/images/logo.png',
+        'Intermarché' => 'https://www.intermarche.com/files/live/sites/intermarche/templates/files/logo.png',
+        'Noz' => 'https://www.nozarrivages.com/wp-content/themes/nozarrivages/img/logo-nozarrivages.svg',
+        'DOMTOM' => 'http://www.domtom.fr/images/plagecoco.jpg',
+        'Galeries Gourmandes' => 'http://www.galeries-gourmandes.com/images/visuel/logo_white.png',
+        'Carrefour Tunisie - UHD' => 'http://static4.carrefour.fr/sites/default/files/public/images/default_logos/hallebarde_v3.png',
+        'Carrefour Algérie - HDA' => 'http://static4.carrefour.fr/sites/default/files/public/images/default_logos/hallebarde_v3.png',
+        'MERCHANT 2.0' => '',
+        'Courtepaille' => 'https://www.courtepaille.com/images/logo17.png'
+    );
+    $sth->bindParam("logo", $enseignes[$input['enseigne']]);
     $sth->bindParam("site", $input['site']);
     $sth->bindParam("adresse", $input['adresse']);
     $sth->bindParam("ville", $input['ville']);
@@ -340,12 +405,7 @@ $app->post('/tpv', function ($request, $response) {
 // Modification d'un magasin
 $app->put('/magasin/[{id}]', function ($request, $response, $args) {
     $input = $request->getParsedBody();
-    $sql = "UPDATE `magasin` SET `dateajout`= :dateajout,
-                                 `enseigne`= :enseigne,
-                                 `site`= :site,
-                                 `adresse`= :adresse,
-                                 `ville`= :ville,
-                                 `CP`= :CP,
+    $sql = "UPDATE `magasin` SET `site`= :site,
                                  `responsable`= :responsable,
                                  `telephone`= :telephone,
                                  `contact`= :contact,
@@ -369,12 +429,7 @@ $app->put('/magasin/[{id}]', function ($request, $response, $args) {
                                  `dimancheFin`= :dimancheFin 
                                 WHERE `id`=:id";
     $sth = $this->db->prepare($sql);
-    $sth->bindParam("dateajout", $input['dateajout']);
-    $sth->bindParam("enseigne", $input['enseigne']);
     $sth->bindParam("site", $input['site']);
-    $sth->bindParam("adresse", $input['adresse']);
-    $sth->bindParam("ville", $input['ville']);
-    $sth->bindParam("CP", $input['CP']);
     $sth->bindParam("responsable", $input['responsable']);
     $sth->bindParam("telephone", $input['telephone']);
     $sth->bindParam("contact", $input['contact']);
