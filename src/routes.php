@@ -407,6 +407,9 @@ $app->put('/magasin/[{id}]', function ($request, $response, $args) {
     $input = $request->getParsedBody();
     $sql = "UPDATE `magasin` SET `site`= :site,
                                  `responsable`= :responsable,
+                                 `adresse` = :adresse,
+                                 `ville` = :ville,
+                                 `CP` = :CP,
                                  `telephone`= :telephone,
                                  `contact`= :contact,
                                  `fax`= :fax,
@@ -431,6 +434,9 @@ $app->put('/magasin/[{id}]', function ($request, $response, $args) {
     $sth = $this->db->prepare($sql);
     $sth->bindParam("site", $input['site']);
     $sth->bindParam("responsable", $input['responsable']);
+    $sth->bindParam("adresse", $input['adresse']);
+    $sth->bindParam("ville", $input['ville']);
+    $sth->bindParam("CP", $input['CP']);
     $sth->bindParam("telephone", $input['telephone']);
     $sth->bindParam("contact", $input['contact']);
     $sth->bindParam("fax", $input['fax']);
