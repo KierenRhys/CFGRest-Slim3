@@ -17,10 +17,10 @@ return [
         ],
 
         'db' => [
-            'host' => 'localhost',
-            'dbname' => 'cfg',
-            'user' => '*****',
-            'pass' => '*****'
+            'host' => 'byxcogcfg-mysql.services.clever-cloud.com',
+            'dbname' => 'byxcogcfg',
+            'user' => 'usuglbmoyhzmeomm',
+            'pass' => 'ejWTxJAj9o6is9FyoIg'
         ]
     ],
 ];
